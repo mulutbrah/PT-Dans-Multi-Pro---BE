@@ -38,8 +38,6 @@ const getList = async (req, res) => {
 const getDetail = async (req, res) => {
   const id = req.params.id;
 
-  console.log("fdsfs ", req.params.id);
-
   try {
     const { data } = await axios.get(
       `http://dev3.dansmultipro.co.id/api/recruitment/positions/${id}`
