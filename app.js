@@ -1,11 +1,14 @@
 const express = require("express");
 const app = express();
-const port = 3000;
+const PORT = process.env.PORT;
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+app.use("/api", routes);
+
+app.listen(PORT, () => {
+  console.log(`Running on http://localhost:${PORT}`);
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
+module.exports = app;
