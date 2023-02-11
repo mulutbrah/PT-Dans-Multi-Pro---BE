@@ -28,14 +28,14 @@ const getUserById = (req, res) => {
 };
 
 const addUser = (req, res) => {
-  const { name, email, age, dob } = req.body;
+  const { name, password, email, age } = req.body;
 
   pool.query(CHECK_EMAIL_EXIST, [email], (err, results) => {
     if (results.rows.length) {
       res.send("Email already exist");
     }
 
-    pool.query(ADD_USER, [name, email, age, dob], (err, results) => {
+    pool.query(ADD_USER, [name, password, email, age], (err, results) => {
       if (err) throw err;
 
       res.status(201).send("User created successfully");
