@@ -27,15 +27,15 @@ const getUserById = (req, res) => {
   });
 };
 
-const addUser = (req, res) => {
-  const { name, password, email, age } = req.body;
+const register = (req, res) => {
+  const { name, password, email } = req.body;
 
-  pool.query(CHECK_EMAIL_EXIST, [email], (err, results) => {
+  pool.query(CHECK_EMAIL_EXIST, [email], async (err, results) => {
     if (results.rows.length) {
       res.send("Email already exist");
     }
 
-    pool.query(ADD_USER, [name, password, email, age], (err, results) => {
+    pool.query(ADD_USER, [name, email, password], (err, results) => {
       if (err) throw err;
 
       res.status(201).send("User created successfully");
@@ -81,7 +81,7 @@ const updateUser = (req, res) => {
 };
 
 module.exports = {
-  addUser,
+  register,
   getUsers,
   updateUser,
   getUserById,
