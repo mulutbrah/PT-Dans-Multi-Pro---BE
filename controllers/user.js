@@ -1,36 +1,16 @@
 const pool = require("../db/connection");
+const Helper = require("../helpers");
 
 const {
   ADD_USER,
   CHECK_EMAIL_EXIST,
-  GET_ALL_USERS,
-  GET_USER_BY_ID,
-  REMOVE_USER_BY_ID,
-  UPDATE_USER_BY_ID,
+  CHECK_EMAIL_AND_PASSWORD_MATCH,
 } = require("../db/queries");
 
-const getUsers = (req, res) => {
-  pool.query(GET_ALL_USERS, (err, results) => {
-    if (err) throw err;
-
-    res.status(200).json(results.rows);
-  });
-};
-
-const getUserById = (req, res) => {
-  const id = parseInt(req.params.id);
-
-  pool.query(GET_USER_BY_ID, [id], (err, results) => {
-    if (err) throw err;
-
-    res.status(200).json(results.rows);
-  });
-};
-
 const register = (req, res) => {
-  const { name, password, email } = req.body;
+  const { name, email, password } = req.body;
 
-  pool.query(CHECK_EMAIL_EXIST, [email], async (err, results) => {
+  pool.query(CHECK_EMAIL_EXIST, [email], (err, results) => {
     if (results.rows.length) {
       res.send("Email already exist");
     }
@@ -43,47 +23,34 @@ const register = (req, res) => {
   });
 };
 
-const removeUserById = (req, res) => {
-  const id = parseInt(req.params.id);
+const login = (req, res) => {
+  const { email, password } = req.body;
 
-  pool.query(GET_USER_BY_ID, [id], (err, results) => {
-    const noUserFound = !results.rows.length;
+  pool.query(
+    CHECK_EMAIL_AND_PASSWORD_MATCH,
+    [email, password],
+    (err, results) => {
+      if (results.rows.length) {
+        const user = results.rows;
 
-    if (noUserFound) {
-      res.send("User doesn't exist");
+        let token = Helper.generateJWT({
+          email: user.email,
+          name: user.name,
+        });
+
+        let finalToken = {
+          token,
+          name: user.name,
+          email: user.email,
+        };
+
+        res.status(200).json(finalToken);
+      }
     }
-
-    pool.query(REMOVE_USER_BY_ID, [id], (err, results) => {
-      if (err) throw err;
-
-      res.status(200).send("User deleted");
-    });
-  });
-};
-
-const updateUser = (req, res) => {
-  const id = parseInt(req.params.id);
-  const { name } = req.body;
-
-  pool.query(GET_USER_BY_ID, [id], (err, results) => {
-    const noUserFound = !results.rows.length;
-
-    if (noUserFound) {
-      res.send("User doesn't exist");
-    }
-
-    pool.query(UPDATE_USER_BY_ID, [name, id], (err, results) => {
-      if (err) throw err;
-
-      res.status(200).send("User updated");
-    });
-  });
+  );
 };
 
 module.exports = {
   register,
-  getUsers,
-  updateUser,
-  getUserById,
-  removeUserById,
+  login,
 };
