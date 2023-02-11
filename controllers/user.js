@@ -10,16 +10,27 @@ const {
 const register = (req, res) => {
   const { name, email, password } = req.body;
 
-  pool.query(CHECK_EMAIL_EXIST, [email], (err, results) => {
-    if (results.rows.length) {
-      res.send("Email already exist");
+  pool.query(CHECK_EMAIL_EXIST, [email]).then((user) => {
+    if (user.rows.length) {
+      res.status(200).json({
+        code: 400,
+        message: "Email already exist",
+      });
+    } else {
+      pool
+        .query(ADD_USER, [name, email, password])
+        .then((newUser) => {
+          {
+            res.status(201).json({
+              code: 201,
+              message: "User created successfully",
+            });
+          }
+        })
+        .catch((err) => {
+          res.status(500).json(err);
+        });
     }
-
-    pool.query(ADD_USER, [name, email, password], (err, results) => {
-      if (err) throw err;
-
-      res.status(201).send("User created successfully");
-    });
   });
 };
 
@@ -31,7 +42,7 @@ const login = (req, res) => {
     [email, password],
     (err, results) => {
       if (results.rows.length) {
-        const user = results.rows;
+        const user = results.rows[0];
 
         let token = Helper.generateJWT({
           email: user.email,
