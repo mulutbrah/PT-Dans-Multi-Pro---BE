@@ -19,8 +19,6 @@ const getList = async (req, res) => {
 
   const QS = Utils.convertObjToQs(newReq);
 
-  console.log("errwrw ", QS);
-
   try {
     const { data } = await axios.get(
       `http://dev3.dansmultipro.co.id/api/recruitment/positions.json?${QS}`
